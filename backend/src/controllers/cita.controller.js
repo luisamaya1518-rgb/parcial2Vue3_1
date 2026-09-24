@@ -42,15 +42,19 @@ const validarNegocio = async ({ paciente_id, doctor_id, fecha_cita }, citaIdExcl
 
   if (new Date(fecha_cita) < new Date()) return 'La fecha de la cita no puede ser en el pasado';
 
-  const where = {
-    doctor_id,
-    fecha_cita,
-    estado: { [Op.ne]: 'cancelada' }
-  };
-  if (citaIdExcluir) where.id = { [Op.ne]: citaIdExcluir };
+  const excluir = citaIdExcluir ? { id: { [Op.ne]: citaIdExcluir } } : {};
 
-  const choque = await Cita.findOne({ where });
-  if (choque) return 'El doctor ya tiene una cita agendada en ese horario';
+  // Choque por doctor (ya existía)
+  const choqueDoctor = await Cita.findOne({
+    where: { doctor_id, fecha_cita, estado: { [Op.ne]: 'cancelada' }, ...excluir }
+  });
+  if (choqueDoctor) return 'El doctor ya tiene una cita agendada en ese horario';
+
+  // Choque por paciente (nuevo)
+  const choquePaciente = await Cita.findOne({
+    where: { paciente_id, fecha_cita, estado: { [Op.ne]: 'cancelada' }, ...excluir }
+  });
+  if (choquePaciente) return 'El paciente ya tiene otra cita agendada en ese horario';
 
   return null;
 };
