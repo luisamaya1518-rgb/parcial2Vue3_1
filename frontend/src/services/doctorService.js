@@ -1,9 +1,9 @@
 import api from './api';
 
 export default {
-  listar: (params) => api.get('/doctores', { params }),
-  obtener: (id) => api.get(`/doctores/${id}`),
-  crear: (data) => api.post('/doctores', data),
-  actualizar: (id, data) => api.put(`/doctores/${id}`, data),
-  eliminar: (id) => api.delete(`/doctores/${id}`)
+  listar: (params) => api.get('/doctors', { params }),
+  obtener: (id) => api.get(`/doctors/${id}`),
+  crear: (data) => api.post('/doctors', data),
+  actualizar: (id, data) => api.put(`/doctors/${id}`, data),
+  eliminar: (id) => api.delete(`/doctors/${id}`)
 };

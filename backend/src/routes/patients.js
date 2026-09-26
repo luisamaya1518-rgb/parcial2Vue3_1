@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { body, param } = require('express-validator');
-const ctrl = require('../controllers/paciente.controller');
+const ctrl = require('../controllers/patient.controller');
 const auth = require('../middlewares/auth');
 const validate = require('../middlewares/validate');
 
@@ -24,7 +24,7 @@ router.use(auth);
 
 /**
  * @swagger
- * /api/pacientes:
+ * /api/patients:
  *   get:
  *     summary: Listar pacientes
  *     tags: [Pacientes]
@@ -68,7 +68,7 @@ router.post('/', reglas, validate, ctrl.crear);
 
 /**
  * @swagger
- * /api/pacientes/{id}:
+ * /api/patients/{id}:
  *   get:
  *     summary: Obtener un paciente
  *     tags: [Pacientes]

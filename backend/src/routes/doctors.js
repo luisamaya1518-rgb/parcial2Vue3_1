@@ -23,7 +23,7 @@ router.use(auth);
 
 /**
  * @swagger
- * /api/doctores:
+ * /api/doctors:
  *   get:
  *     summary: Listar doctores
  *     tags: [Doctores]
@@ -67,7 +67,7 @@ router.post('/', reglas, validate, ctrl.crear);
 
 /**
  * @swagger
- * /api/doctores/{id}:
+ * /api/doctors/{id}:
  *   get:
  *     summary: Obtener un doctor
  *     tags: [Doctores]

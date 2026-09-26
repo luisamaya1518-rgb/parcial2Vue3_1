@@ -128,8 +128,8 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
-import citaService from '@/services/citaService';
-import pacienteService from '@/services/pacienteService';
+import appointmentService from '@/services/appointmentService';
+import patientService from '@/services/patientService';
 import doctorService from '@/services/doctorService';
 
 const headers = [
@@ -190,7 +190,7 @@ const required = (v) => !!v || 'Requerido';
 async function fetchCitas() {
   loading.value = true;
   try {
-    const { data } = await citaService.listar({
+    const { data } = await appointmentService.listar({
       page: page.value,
       limit: itemsPerPage.value,
       estado: filtroEstado.value || undefined
@@ -208,7 +208,7 @@ async function cargarOpciones() {
   loadingOpciones.value = true;
   try {
     const [resPacientes, resDoctores] = await Promise.all([
-      pacienteService.listar({ limit: 100 }),
+      patientService.listar({ limit: 100 }),
       doctorService.listar({ limit: 100 })
     ]);
     pacientes.value = resPacientes.data.data;
@@ -250,10 +250,10 @@ async function save() {
   try {
     const payload = { ...form, fecha_cita: new Date(form.fecha_cita).toISOString() };
     if (editing.value) {
-      await citaService.actualizar(form.id, payload);
+      await appointmentService.actualizar(form.id, payload);
       notify('Cita actualizada');
     } else {
-      await citaService.crear(payload);
+      await appointmentService.crear(payload);
       notify('Cita creada');
     }
     dialog.value = false;
@@ -273,7 +273,7 @@ function confirmDelete(item) {
 async function remove() {
   deleting.value = true;
   try {
-    await citaService.eliminar(toDelete.value.id);
+    await appointmentService.eliminar(toDelete.value.id);
     notify('Cita eliminada');
     deleteDialog.value = false;
     fetchCitas();

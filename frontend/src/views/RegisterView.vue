@@ -3,34 +3,34 @@
     <v-row justify="center">
       <v-col cols="12" sm="8" md="5">
         <v-card>
-          <v-card-title>Crear cuenta</v-card-title>
+          <v-card-title>Create Account</v-card-title>
           <v-card-text>
             <v-form ref="formRef" @submit.prevent="onSubmit">
               <v-text-field
-                v-model="nombre"
-                label="Nombre completo"
+                v-model="name"
+                label="Full Name"
                 :rules="[required]"
               />
               <v-text-field
                 v-model="email"
                 label="Email"
                 type="email"
-                :rules="[required, emailValido]"
+                :rules="[required, validEmail]"
               />
               <v-text-field
                 v-model="password"
-                label="Contraseña"
+                label="Password"
                 type="password"
-                :rules="[required, passwordFuerte]"
-                hint="Mínimo 8 caracteres, con letras y números"
+                :rules="[required, strongPassword]"
+                hint="At least 8 characters, with letters and numbers"
                 persistent-hint
               />
               <v-text-field
                 v-model="confirmPassword"
-                label="Confirmar contraseña"
+                label="Confirm Password"
                 type="password"
                 class="mt-2"
-                :rules="[required, confirmaCoincide]"
+                :rules="[required, passwordsMatch]"
               />
 
               <v-alert v-if="error" type="error" density="compact" class="mt-4 mb-2">
@@ -38,13 +38,13 @@
               </v-alert>
 
               <v-btn type="submit" color="primary" block class="mt-4" :loading="loading">
-                Registrarse
+                Sign Up
               </v-btn>
             </v-form>
 
             <div class="text-center mt-4">
-              ¿Ya tienes cuenta?
-              <RouterLink to="/login">Inicia sesión</RouterLink>
+              Already have an account?
+              <RouterLink to="/login">Log in</RouterLink>
             </div>
           </v-card-text>
         </v-card>
@@ -58,7 +58,7 @@ import { ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
-const nombre = ref('');
+const name = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
@@ -69,12 +69,12 @@ const formRef = ref(null);
 const router = useRouter();
 const auth = useAuthStore();
 
-const required = (v) => !!v || 'Requerido';
-const emailValido = (v) => /^\S+@\S+\.\S+$/.test(v) || 'Email inválido';
-const passwordFuerte = (v) =>
+const required = (v) => !!v || 'Required';
+const validEmail = (v) => /^\S+@\S+\.\S+$/.test(v) || 'Invalid email';
+const strongPassword = (v) =>
   (v.length >= 8 && /[A-Za-z]/.test(v) && /\d/.test(v)) ||
-  'Debe tener 8+ caracteres, con letras y números';
-const confirmaCoincide = (v) => v === password.value || 'Las contraseñas no coinciden';
+  'Must be 8+ characters, with letters and numbers';
+const passwordsMatch = (v) => v === password.value || 'Passwords do not match';
 
 async function onSubmit() {
   const { valid } = await formRef.value.validate();
@@ -83,10 +83,10 @@ async function onSubmit() {
   error.value = '';
   loading.value = true;
   try {
-    await auth.register(nombre.value, email.value, password.value);
+    await auth.register(name.value, email.value, password.value);
     router.push('/dashboard');
   } catch (e) {
-    error.value = e.response?.data?.message || 'Error al registrarse';
+    error.value = e.response?.data?.message || 'Error creating account';
   } finally {
     loading.value = false;
   }

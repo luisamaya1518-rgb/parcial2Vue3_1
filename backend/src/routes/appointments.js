@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { body, param, query } = require('express-validator');
-const ctrl = require('../controllers/cita.controller');
+const ctrl = require('../controllers/appointment.controller');
 const auth = require('../middlewares/auth');
 const validate = require('../middlewares/validate');
 
@@ -23,7 +23,7 @@ router.use(auth);
 
 /**
  * @swagger
- * /api/citas:
+ * /api/appointments:
  *   get:
  *     summary: Listar citas
  *     tags: [Citas]
@@ -71,7 +71,7 @@ router.post('/', reglas, validate, ctrl.crear);
 
 /**
  * @swagger
- * /api/citas/{id}:
+ * /api/appointments/{id}:
  *   get:
  *     summary: Obtener una cita
  *     tags: [Citas]

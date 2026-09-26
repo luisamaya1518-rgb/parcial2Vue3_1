@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const ctrl = require('../controllers/reporte.controller');
+const ctrl = require('../controllers/report.controller');
 const auth = require('../middlewares/auth');
 
 router.use(auth);
@@ -13,7 +13,7 @@ router.use(auth);
 
 /**
  * @swagger
- * /api/reportes/citas-por-estado:
+ * /api/reports/appointments-by-status:
  *   get:
  *     summary: Conteo de citas agrupadas por estado
  *     tags: [Reportes]
@@ -21,11 +21,11 @@ router.use(auth);
  *     responses:
  *       200: { description: Reporte generado }
  */
-router.get('/citas-por-estado', ctrl.citasPorEstado);
+router.get('/appointments-by-status', ctrl.citasPorEstado);
 
 /**
  * @swagger
- * /api/reportes/citas-por-doctor:
+ * /api/reports/appointments-by-doctor:
  *   get:
  *     summary: Conteo de citas agrupadas por doctor
  *     tags: [Reportes]
@@ -33,6 +33,6 @@ router.get('/citas-por-estado', ctrl.citasPorEstado);
  *     responses:
  *       200: { description: Reporte generado }
  */
-router.get('/citas-por-doctor', ctrl.citasPorDoctor);
+router.get('/appointments-by-doctor', ctrl.citasPorDoctor);
 
 module.exports = router;
