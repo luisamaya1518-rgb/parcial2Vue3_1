@@ -14,11 +14,11 @@
     <v-row class="mb-2">
       <v-col cols="12" sm="4">
         <v-select
-          v-model="filterEstado"
+          v-model="filtroEstado"
           :items="estados"
           label="Filtrar por estado"
-          density="compact"
           clearable
+          density="compact"
           @update:model-value="fetchCitas"
         />
       </v-col>
@@ -34,19 +34,23 @@
       @update:options="fetchCitas"
     >
       <template #item.paciente="{ item }">
-        {{ item.Paciente?.nombre }}
+        {{ item.Paciente?.nombre || '—' }}
       </template>
+
       <template #item.doctor="{ item }">
-        {{ item.Doctor?.nombre }}
+        {{ item.Doctor?.nombre || '—' }} ({{ item.Doctor?.especialidad }})
       </template>
+
       <template #item.fecha_cita="{ item }">
         {{ formatFecha(item.fecha_cita) }}
       </template>
+
       <template #item.estado="{ item }">
-        <v-chip :color="estadoColor(item.estado)" size="small" variant="flat">
+        <v-chip :color="colorEstado(item.estado)" size="small">
           {{ item.estado }}
         </v-chip>
       </template>
+
       <template #item.actions="{ item }">
         <v-icon size="small" class="mr-2" @click="openEdit(item)">mdi-pencil</v-icon>
         <v-icon size="small" color="error" @click="confirmDelete(item)">mdi-delete</v-icon>
@@ -54,7 +58,7 @@
     </v-data-table-server>
 
     <!-- Dialogo crear/editar -->
-    <v-dialog v-model="dialog" max-width="520">
+    <v-dialog v-model="dialog" max-width="500">
       <v-card>
         <v-card-title>{{ editing ? 'Editar cita' : 'Nueva cita' }}</v-card-title>
         <v-card-text>
@@ -66,14 +70,16 @@
               item-value="id"
               label="Paciente"
               :rules="[required]"
+              :loading="loadingOpciones"
             />
             <v-select
               v-model="form.doctor_id"
               :items="doctores"
-              item-title="nombre"
+              :item-title="d => `${d.nombre} (${d.especialidad})`"
               item-value="id"
               label="Doctor"
               :rules="[required]"
+              :loading="loadingOpciones"
             />
             <v-text-field
               v-model="form.fecha_cita"
@@ -82,6 +88,7 @@
               :rules="[required]"
             />
             <v-select
+              v-if="editing"
               v-model="form.estado"
               :items="estados"
               label="Estado"
@@ -122,8 +129,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import appointmentService from '@/services/appointmentService';
-import doctorService from '@/services/doctorService';
 import patientService from '@/services/patientService';
+import doctorService from '@/services/doctorService';
 
 const headers = [
   { title: 'Paciente', key: 'paciente', sortable: false },
@@ -134,16 +141,34 @@ const headers = [
 ];
 
 const estados = ['pendiente', 'confirmada', 'completada', 'cancelada'];
+const coloresEstado = {
+  pendiente: 'warning',
+  confirmada: 'info',
+  completada: 'success',
+  cancelada: 'error'
+};
+function colorEstado(estado) {
+  return coloresEstado[estado] || 'grey';
+}
+
+function formatFecha(fecha) {
+  if (!fecha) return '—';
+  return new Date(fecha).toLocaleString('es-SV', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  });
+}
 
 const citas = ref([]);
 const total = ref(0);
 const page = ref(1);
 const itemsPerPage = ref(10);
 const loading = ref(false);
-const filterEstado = ref(null);
+const filtroEstado = ref(null);
 
-const doctores = ref([]);
 const pacientes = ref([]);
+const doctores = ref([]);
+const loadingOpciones = ref(false);
 
 const dialog = ref(false);
 const editing = ref(false);
@@ -151,12 +176,8 @@ const saving = ref(false);
 const formRef = ref(null);
 const formError = ref('');
 const form = reactive({
-  id: null,
-  paciente_id: null,
-  doctor_id: null,
-  fecha_cita: '',
-  estado: 'pendiente',
-  notas: ''
+  id: null, paciente_id: null, doctor_id: null,
+  fecha_cita: '', estado: 'pendiente', notas: ''
 });
 
 const deleteDialog = ref(false);
@@ -166,27 +187,13 @@ const toDelete = ref(null);
 const snackbar = reactive({ show: false, text: '', color: 'success' });
 const required = (v) => !!v || 'Requerido';
 
-function estadoColor(estado) {
-  return {
-    pendiente: 'warning',
-    confirmada: 'info',
-    completada: 'success',
-    cancelada: 'error'
-  }[estado] || 'grey';
-}
-
-function formatFecha(value) {
-  if (!value) return '';
-  return new Date(value).toLocaleString();
-}
-
 async function fetchCitas() {
   loading.value = true;
   try {
     const { data } = await appointmentService.listar({
       page: page.value,
       limit: itemsPerPage.value,
-      estado: filterEstado.value || undefined
+      estado: filtroEstado.value || undefined
     });
     citas.value = data.data;
     total.value = data.meta.total;
@@ -197,30 +204,26 @@ async function fetchCitas() {
   }
 }
 
-async function loadOptions() {
+async function cargarOpciones() {
+  loadingOpciones.value = true;
   try {
-    const [{ data: dData }, { data: pData }] = await Promise.all([
-      doctorService.listar({ limit: 50 }),
-      patientService.listar({ limit: 50 })
+    const [resPacientes, resDoctores] = await Promise.all([
+      patientService.listar({ limit: 100 }),
+      doctorService.listar({ limit: 100 })
     ]);
-    doctores.value = dData.data;
-    pacientes.value = pData.data;
+    pacientes.value = resPacientes.data.data;
+    doctores.value = resDoctores.data.data;
   } catch (e) {
-    notify('Error al cargar doctores/pacientes', 'error');
+    notify('Error al cargar pacientes/doctores', 'error');
+  } finally {
+    loadingOpciones.value = false;
   }
 }
 
 function openCreate() {
   editing.value = false;
   formError.value = '';
-  Object.assign(form, {
-    id: null,
-    paciente_id: null,
-    doctor_id: null,
-    fecha_cita: '',
-    estado: 'pendiente',
-    notas: ''
-  });
+  Object.assign(form, { id: null, paciente_id: null, doctor_id: null, fecha_cita: '', estado: 'pendiente', notas: '' });
   dialog.value = true;
 }
 
@@ -231,7 +234,7 @@ function openEdit(item) {
     id: item.id,
     paciente_id: item.paciente_id,
     doctor_id: item.doctor_id,
-    fecha_cita: item.fecha_cita?.slice(0, 16),
+    fecha_cita: item.fecha_cita ? item.fecha_cita.slice(0, 16) : '',
     estado: item.estado,
     notas: item.notas
   });
@@ -245,11 +248,12 @@ async function save() {
   saving.value = true;
   formError.value = '';
   try {
+    const payload = { ...form, fecha_cita: new Date(form.fecha_cita).toISOString() };
     if (editing.value) {
-      await appointmentService.actualizar(form.id, form);
+      await appointmentService.actualizar(form.id, payload);
       notify('Cita actualizada');
     } else {
-      await appointmentService.crear(form);
+      await appointmentService.crear(payload);
       notify('Cita creada');
     }
     dialog.value = false;
@@ -287,5 +291,7 @@ function notify(text, color = 'success') {
   snackbar.show = true;
 }
 
-onMounted(loadOptions);
+onMounted(() => {
+  cargarOpciones();
+});
 </script>

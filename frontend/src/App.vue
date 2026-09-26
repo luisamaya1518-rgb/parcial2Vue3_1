@@ -19,7 +19,7 @@
         <v-list nav density="compact">
           <v-list-item
             prepend-icon="mdi-logout"
-            title="Cerrar sesión"
+            :title="`Cerrar sesión (${auth.user?.nombre})`"
             @click="handleLogout"
           />
         </v-list>
@@ -34,7 +34,7 @@
       <v-app-bar-title>
         <router-link to="/" class="app-title-link">
           <v-icon icon="mdi-stethoscope" class="mr-2" />
-          Clínica Vue
+          Gestión Médica
         </router-link>
       </v-app-bar-title>
 
@@ -50,11 +50,17 @@
         >
           {{ item.title }}
         </v-btn>
-        <v-btn variant="text" prepend-icon="mdi-logout" @click="handleLogout">
-          Salir
+        <v-btn
+          variant="text"
+          prepend-icon="mdi-logout"
+          class="d-none d-md-inline-flex"
+          @click="handleLogout"
+        >
+          Salir ({{ auth.user?.nombre }})
         </v-btn>
       </template>
       <template v-else>
+        <v-btn to="/" variant="text">Inicio</v-btn>
         <v-btn to="/contact" variant="text">Contacto</v-btn>
         <v-btn to="/login" variant="text">Iniciar sesión</v-btn>
         <v-btn to="/register" variant="flat" color="secondary" class="ml-2">
@@ -64,11 +70,11 @@
     </v-app-bar>
 
     <v-main>
-      <router-view />
+      <RouterView />
     </v-main>
 
     <v-footer color="primary" class="justify-center text-caption">
-      ULS &copy; {{ year }}  Sistema de gestión médica
+      ULS &copy; {{ year }} — Sistema de gestión médica
     </v-footer>
   </v-app>
 </template>

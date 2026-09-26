@@ -1,53 +1,41 @@
 <template>
-  <v-container class="py-10">
-    <v-row justify="center">
+  <v-container class="fill-height" fluid>
+    <v-row justify="center" align="center">
       <v-col cols="12" md="8" class="text-center">
-        <v-icon icon="mdi-stethoscope" size="64" color="primary" class="mb-4" />
-        <h1 class="text-h3 font-weight-bold mb-2">Sistema de Gestión Médica</h1>
-        <p class="text-body-1 text-medium-emphasis mb-6">
-          Administra doctores, pacientes y citas de tu clínica en un solo lugar.
-        </p>
-        <v-btn
-          v-if="!auth.isAuthenticated"
-          color="primary"
-          size="large"
-          to="/login"
-          class="mr-2"
-        >
-          Iniciar sesión
-        </v-btn>
-        <v-btn
-          v-if="!auth.isAuthenticated"
-          variant="outlined"
-          size="large"
-          to="/register"
-        >
-          Crear cuenta
-        </v-btn>
-        <v-btn
-          v-else
-          color="primary"
-          size="large"
-          to="/dashboard"
-        >
-          Ir al panel
-        </v-btn>
-      </v-col>
-    </v-row>
+        <v-icon icon="mdi-hospital-box" size="80" color="primary" class="mb-4" />
 
-    <v-row class="mt-8" justify="center">
-      <v-col v-for="card in cards" :key="card.title" cols="12" sm="6" md="4">
-        <v-card variant="outlined" class="h-100 pa-2">
-          <v-card-item>
-            <template #prepend>
-              <v-avatar color="primary" variant="tonal" size="48">
-                <v-icon :icon="card.icon" />
-              </v-avatar>
-            </template>
-            <v-card-title>{{ card.title }}</v-card-title>
-          </v-card-item>
-          <v-card-text>{{ card.text }}</v-card-text>
-        </v-card>
+        <h1 class="text-h3 font-weight-bold mb-2">
+          Medical Management System
+        </h1>
+        <p class="text-h6 text-medium-emphasis mb-8">
+          Manage patients, doctors, and appointments all in one place.
+        </p>
+
+        <v-row justify="center" class="mb-8">
+          <v-col v-for="card in cards" :key="card.title" cols="12" sm="4">
+            <v-card variant="tonal" color="primary">
+              <v-card-text class="text-center">
+                <v-icon :icon="card.icon" size="40" class="mb-2" />
+                <div class="text-h6">{{ card.title }}</div>
+                <div class="text-body-2">{{ card.text }}</div>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <template v-if="auth.isAuthenticated">
+          <v-btn color="primary" size="large" to="/dashboard" prepend-icon="mdi-view-dashboard">
+            Go to Dashboard
+          </v-btn>
+        </template>
+        <template v-else>
+          <v-btn color="primary" size="large" to="/login" class="mr-3">
+            Log In
+          </v-btn>
+          <v-btn color="primary" variant="outlined" size="large" to="/register">
+            Create Account
+          </v-btn>
+        </template>
       </v-col>
     </v-row>
   </v-container>
@@ -60,19 +48,19 @@ const auth = useAuthStore();
 
 const cards = [
   {
-    title: 'Doctores',
+    title: 'Patients',
+    icon: 'mdi-account-injury',
+    text: 'Manage each patient\'s medical history and contact details.'
+  },
+  {
+    title: 'Doctors',
     icon: 'mdi-doctor',
-    text: 'Registra al personal médico junto con su especialidad y datos de contacto.'
+    text: 'Manage specialists along with their specialties and contact information.'
   },
   {
-    title: 'Pacientes',
-    icon: 'mdi-account-group',
-    text: 'Lleva el historial y los datos de contacto de cada paciente.'
-  },
-  {
-    title: 'Citas',
+    title: 'Appointments',
     icon: 'mdi-calendar-check',
-    text: 'Agenda, edita y da seguimiento al estado de cada cita médica.'
+    text: 'Schedule, edit, and track the status of each medical appointment.'
   }
 ];
 </script>

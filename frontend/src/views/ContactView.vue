@@ -1,57 +1,75 @@
 <template>
-  <v-container class="py-8">
+  <v-container class="fill-height" fluid>
     <v-row justify="center">
-      <v-col cols="12" md="7">
-        <h1 class="text-h5 mb-4">Contacto</h1>
+      <v-col cols="12" sm="8" md="5">
         <v-card>
+          <v-card-title>Contact Us</v-card-title>
           <v-card-text>
             <v-form ref="formRef" @submit.prevent="onSubmit">
-              <v-text-field v-model="form.nombre" label="Nombre" :rules="[required]" />
-              <v-text-field v-model="form.email" label="Email" :rules="[required]" />
-              <v-textarea v-model="form.mensaje" label="Mensaje" rows="4" :rules="[required]" />
-              <v-alert v-if="sent" type="success" density="compact" class="mb-4">
-                Mensaje enviado. Te contactaremos pronto.
+              <v-text-field
+                v-model="email"
+                label="Your email"
+                type="email"
+                :rules="[required, validEmail]"
+              />
+              <v-textarea
+                v-model="message"
+                label="Message"
+                :rules="[required]"
+                rows="4"
+                counter="1000"
+                maxlength="1000"
+              />
+
+              <v-alert v-if="error" type="error" density="compact" class="mb-2">
+                {{ error }}
               </v-alert>
-              <v-btn type="submit" color="primary" :loading="sending">
-                Enviar mensaje
+              <v-alert v-if="sent" type="success" density="compact" class="mb-2">
+                Message sent successfully. We'll get back to you soon.
+              </v-alert>
+
+              <v-btn type="submit" color="primary" block :loading="loading">
+                Send
               </v-btn>
             </v-form>
           </v-card-text>
         </v-card>
-      </v-col>
-
-      <v-col cols="12" md="4">
-        <v-list lines="two" density="comfortable">
-          <v-list-item prepend-icon="mdi-map-marker" title="Dirección" subtitle="San Salvador, El Salvador" />
-          <v-list-item prepend-icon="mdi-phone" title="Teléfono" subtitle="+503 7000-0000" />
-          <v-list-item prepend-icon="mdi-email" title="Email" subtitle="contacto@clinicavue.com" />
-          <v-list-item prepend-icon="mdi-clock-outline" title="Horario" subtitle="Lun a Vie, 8:00 - 17:00" />
-        </v-list>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref } from 'vue';
+import api from '@/services/api';
 
-const formRef = ref(null);
-const sending = ref(false);
+const email = ref('');
+const message = ref('');
+const error = ref('');
 const sent = ref(false);
-const form = reactive({ nombre: '', email: '', mensaje: '' });
-const required = (v) => !!v || 'Requerido';
+const loading = ref(false);
+const formRef = ref(null);
+
+const required = (v) => !!v || 'Required';
+const validEmail = (v) => /^\S+@\S+\.\S+$/.test(v) || 'Invalid email';
 
 async function onSubmit() {
   const { valid } = await formRef.value.validate();
   if (!valid) return;
 
-  sending.value = true;
+  error.value = '';
   sent.value = false;
-  setTimeout(() => {
-    sending.value = false;
+  loading.value = true;
+  try {
+    await api.post('/contact', { email: email.value, message: message.value });
     sent.value = true;
-    Object.assign(form, { nombre: '', email: '', mensaje: '' });
+    email.value = '';
+    message.value = '';
     formRef.value.resetValidation();
-  }, 600);
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Error sending message';
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
