@@ -26,6 +26,10 @@
               </v-btn>
             </v-form>
           </v-card-text>
+          <v-card-actions class="justify-center">
+            <span class="text-body-2">¿No tienes cuenta?</span>
+            <v-btn variant="text" size="small" to="/register">Regístrate</v-btn>
+          </v-card-actions>
         </v-card>
       </v-col>
     </v-row>
